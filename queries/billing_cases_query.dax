@@ -1,0 +1,90 @@
+DEFINE
+    VAR __DS0FilterTable =
+        FILTER (
+            KEEPFILTERS ( VALUES ( 'Billing Cases'[ProcessingDate] ) ),
+            AND (
+                'Billing Cases'[ProcessingDate] >= DATE ( {year}, {month}, {day_start} ),
+                'Billing Cases'[ProcessingDate] < DATE ( {year}, {month}, {day_end} )
+            )
+        )
+    VAR __DS0Core =
+        FILTER (
+            KEEPFILTERS (
+                SUMMARIZECOLUMNS (
+                    'Transport Orders'[ChargedLocationName],
+                    'Transport Orders'[ServiceLevel],
+                    'Billing Cases'[ProcessingDate],
+                    'Billing Cases - Costs'[BillIdExternalDate],
+                    'Billing Cases - Costs'[CostType],
+                    'Billing Cases'[LoadId],
+                    'Billing Cases'[TransportOrderId],
+                    'Billing Cases'[SteeringPartnerId],
+                    'Billing Cases'[SteeringPartnerName],
+                    'Billing Cases'[BillingCaseId],
+                    'Transport Orders'[BusinessCase],
+                    'Transport Orders'[SupplierName],
+                    'Billing Cases'[BillingPartnerName],
+                    'Transport Orders'[PickupLocationID],
+                    'Transport Orders'[PickupLocationCity],
+                    'Transport Orders'[PickupLocationZipCode],
+                    'Transport Orders'[PickupLocationCountry],
+                    'Transport Orders'[ChargedLocationId],
+                    'Transport Orders'[Scope],
+                    'Transport Orders'[PlantName],
+                    'Transport Orders'[DeliveryLocationCity],
+                    'Transport Orders'[DeliveryLocationID],
+                    'Transport Orders'[DeliveryLocationZipCode],
+                    'Transport Orders'[DeliveryLocationCountry],
+                    'Billing Cases - Costs'[BillIdExternal],
+                    'Transport Orders'[Department Description],
+                    'Loads'[SourcingRegion],
+                    'Loads'[TransportMode],
+                    'Billing Cases'[CodeI],
+                    'Billing Cases'[CostCenter],
+                    'Billing Cases'[Gl Account],
+                    'Billing Cases'[Indicator],
+                    'Rating Units'[ProcessingDate],
+                    __DS0FilterTable,
+                    "SumAmountInEuro", CALCULATE ( SUM ( 'Billing Cases - Costs'[AmountInEuro] ) ),
+                    "MaxCurrentStatus", CALCULATE ( MAX ( 'Billing Cases - Costs Status (selection)'[CurrentStatus] ) )
+                )
+            ),
+            [SumAmountInEuro] <> 0
+        )
+
+EVALUATE
+__DS0Core
+ORDER BY
+    'Transport Orders'[ServiceLevel] DESC,
+    'Transport Orders'[ChargedLocationName],
+    'Billing Cases'[ProcessingDate],
+    'Billing Cases - Costs'[BillIdExternalDate],
+    'Billing Cases - Costs'[CostType],
+    'Billing Cases'[LoadId],
+    'Billing Cases'[TransportOrderId],
+    'Billing Cases'[SteeringPartnerId],
+    'Billing Cases'[SteeringPartnerName],
+    'Billing Cases'[BillingCaseId],
+    'Transport Orders'[BusinessCase],
+    'Transport Orders'[SupplierName],
+    'Billing Cases'[BillingPartnerName],
+    'Transport Orders'[PickupLocationID],
+    'Transport Orders'[PickupLocationCity],
+    'Transport Orders'[PickupLocationZipCode],
+    'Transport Orders'[PickupLocationCountry],
+    'Transport Orders'[ChargedLocationId],
+    'Transport Orders'[Scope],
+    'Transport Orders'[PlantName],
+    'Transport Orders'[DeliveryLocationCity],
+    'Transport Orders'[DeliveryLocationID],
+    'Transport Orders'[DeliveryLocationZipCode],
+    'Transport Orders'[DeliveryLocationCountry],
+    'Billing Cases - Costs'[BillIdExternal],
+    'Transport Orders'[Department Description],
+    'Loads'[SourcingRegion],
+    'Loads'[TransportMode],
+    'Billing Cases'[CodeI],
+    'Billing Cases'[CostCenter],
+    'Billing Cases'[Gl Account],
+    'Billing Cases'[Indicator],
+    'Rating Units'[ProcessingDate]

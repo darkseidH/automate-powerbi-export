@@ -1,0 +1,6 @@
+pandas 
+pythonnet
+python-dotenv
+openpyxl
+pyarrow
+rich

@@ -1,0 +1,16 @@
+DEFINE
+    VAR __DS0FilterTable =
+        FILTER (
+            KEEPFILTERS ( VALUES ( 'Billing Cases'[ProcessingDate] ) ),
+            AND (
+                'Billing Cases'[ProcessingDate] >= DATE ( {year}, {month}, {day_start} ),
+                'Billing Cases'[ProcessingDate]
+                    < ( DATE ( {year}, {month}, {day_end} ) + TIME ( 0, 0, 1 ) )
+            )
+        )
+
+EVALUATE
+SUMMARIZECOLUMNS (
+    __DS0FilterTable,
+    "SumAmountInEuro", IGNORE ( CALCULATE ( SUM ( 'Billing Cases - Costs'[AmountInEuro] ) ) )
+)

@@ -1,0 +1,29 @@
+DEFINE
+    VAR __DS0FilterTable =
+        FILTER (
+            KEEPFILTERS ( VALUES ( 'Billing Cases'[ProcessingDate] ) ),
+            AND (
+                'Billing Cases'[ProcessingDate] >= DATE ( {year_start}, {month}, {day} ),
+                'Billing Cases'[ProcessingDate] < DATE ( {year_end}, {month}, {day} )
+            )
+        )
+    VAR __DS0Core =
+        SUMMARIZECOLUMNS (
+            'Date (Finance)'[Year],
+            'Date (Finance)'[month],
+            __DS0FilterTable,
+            "SumAmountInEuro", CALCULATE ( SUM ( 'Billing Cases - Costs'[AmountInEuro] ) )
+        )
+    VAR __DS0BodyLimited =
+        TOPN (
+            500000,
+            __DS0Core,
+            'Date (Finance)'[Year], 1,
+            'Date (Finance)'[month], 1
+        )
+
+EVALUATE
+__DS0BodyLimited
+ORDER BY
+    'Date (Finance)'[Year],
+    'Date (Finance)'[month]

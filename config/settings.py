@@ -66,6 +66,11 @@ class Config:
         """Parquet output directory."""
         return os.path.join(self.output_dir, "parquet")
 
+    @property
+    def excel_dir(self) -> str:
+        """Excel output directory."""
+        return os.path.join(self.output_dir, "excel")
+
     def get_connection_params(self) -> Tuple[str, str]:
         """Get PowerBI connection parameters."""
         return self.powerbi_server, self.powerbi_database

@@ -3,8 +3,9 @@
 
 import json
 import os
-from typing import Dict
 from datetime import datetime
+from typing import Dict
+
 from .retry_manager import FailedMonth, RetryManager
 
 

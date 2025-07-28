@@ -3,8 +3,8 @@
 
 from dataclasses import dataclass, asdict
 from datetime import datetime
-from typing import List, Dict, Optional, Tuple
 from enum import Enum
+from typing import List, Dict, Tuple
 
 
 class ErrorType(Enum):
@@ -110,43 +110,43 @@ class RetryManager:
 
         # Session errors
         if any(
-            keyword in error_lower
-            for keyword in [
-                "session",
-                "expired",
-                "session id cannot be found",
-                "session does not exist",
-            ]
+                keyword in error_lower
+                for keyword in [
+                    "session",
+                    "expired",
+                    "session id cannot be found",
+                    "session does not exist",
+                ]
         ):
             return ErrorType.SESSION_EXPIRED
 
         # Connection/Timeout errors
         elif any(
-            keyword in error_lower
-            for keyword in [
-                "timeout",
-                "timed out",
-                "connection lost",
-                "connection either timed out",
-            ]
+                keyword in error_lower
+                for keyword in [
+                    "timeout",
+                    "timed out",
+                    "connection lost",
+                    "connection either timed out",
+                ]
         ):
             return ErrorType.CONNECTION_TIMEOUT
 
         # Memory errors
         elif any(
-            keyword in error_lower
-            for keyword in [
-                "memory",
-                "out of memory",
-                "memoryerror",
-                "insufficient memory",
-            ]
+                keyword in error_lower
+                for keyword in [
+                    "memory",
+                    "out of memory",
+                    "memoryerror",
+                    "insufficient memory",
+                ]
         ):
             return ErrorType.MEMORY_ERROR
 
         # Data errors
         elif any(
-            keyword in error_lower for keyword in ["data", "dataset", "query execution"]
+                keyword in error_lower for keyword in ["data", "dataset", "query execution"]
         ):
             return ErrorType.DATA_ERROR
 

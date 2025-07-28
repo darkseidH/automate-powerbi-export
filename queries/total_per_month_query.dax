@@ -5,7 +5,7 @@ DEFINE
             AND (
                 'Billing Cases'[ProcessingDate] >= DATE ( {year}, {month}, {day_start} ),
                 'Billing Cases'[ProcessingDate]
-                    < ( DATE ( {year}, {month}, {day_end} ) + TIME ( 0, 0, 1 ) )
+                    <= ( DATE ( {year}, {month}, {day_end} ) + TIME ( 0, 0, 1 ) )
             )
         )
 

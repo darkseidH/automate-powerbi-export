@@ -1,7 +1,9 @@
-pandas 
-pythonnet
-python-dotenv
+pandas~=2.3.1
+pythonnet~=3.0.5
+python-dotenv~=1.1.1
 openpyxl
 pyarrow
-rich
+rich~=14.0.0
 xlsxwriter
+numpy~=2.3.1
+nutter~=0.1.35

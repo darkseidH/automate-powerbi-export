@@ -1,20 +1,22 @@
 # exporters/parquet_exporter.py
 """Parquet export implementation."""
 
-import pandas as pd
 from typing import Optional
+
+import pandas as pd
 from rich.progress import Progress
+
 from .base import BaseExporter
 
 
 class ParquetExporter(BaseExporter):
     """Exports DataFrames to Parquet format with compression."""
-    
+
     def __init__(
-        self, 
-        output_dir: str, 
-        compression: str = 'snappy',
-        engine: str = 'pyarrow'
+            self,
+            output_dir: str,
+            compression: str = 'snappy',
+            engine: str = 'pyarrow'
     ):
         """
         Initialize Parquet exporter.
@@ -27,17 +29,17 @@ class ParquetExporter(BaseExporter):
         super().__init__(output_dir)
         self.compression = compression
         self.engine = engine
-    
+
     @property
     def file_extension(self) -> str:
         """Parquet file extension."""
         return "parquet"
-    
+
     def export(
-        self, 
-        df: pd.DataFrame, 
-        filename: str,
-        progress: Optional[Progress] = None
+            self,
+            df: pd.DataFrame,
+            filename: str,
+            progress: Optional[Progress] = None
     ) -> str:
         """
         Export DataFrame to Parquet format.
@@ -51,12 +53,12 @@ class ParquetExporter(BaseExporter):
             Full path to exported file
         """
         filepath = self.get_full_path(filename)
-        
+
         df.to_parquet(
             filepath,
             index=False,
             compression=self.compression,
             engine=self.engine
         )
-        
+
         return filepath

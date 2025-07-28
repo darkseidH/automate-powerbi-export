@@ -1,4 +1,4 @@
-# main.py
+# main_v3.py
 """Main orchestrator for PowerBI 12-month data export pipeline."""
 
 import gc
@@ -8,11 +8,15 @@ import time
 from datetime import datetime
 from typing import List, Tuple, Optional
 
+import pandas as pd
+
 from config import Config
 from core import PowerBIConnection, QueryExecutor, DataProcessor
 from exporters import CSVExporter, ParquetExporter
+from exporters.excel_exporter import ExcelExporter
 from logger.logger import Logger
 from utils import DateManager, ProgressTracker, RetryManager, StateManager
+from utils.validation_manager import ValidationManager
 
 
 class PowerBIExportPipeline:
@@ -29,6 +33,14 @@ class PowerBIExportPipeline:
         # Initialize exporters
         self.csv_exporter = CSVExporter(self.config.csv_dir)
         self.parquet_exporter = ParquetExporter(self.config.parquet_dir)
+        self.excel_exporter = ExcelExporter(self.config.excel_dir)
+        # Initialize validation manager
+        self.validation_manager = ValidationManager(self.config.output_dir)
+
+        # Load validation query template path
+        self.validation_query_path = os.path.join(
+            self.config.base_dir, "queries", "total_per_month_query.dax"
+        )
 
         # Setup logging
         Logger.setup(name="PowerBI_Export", level=logging.INFO)
@@ -92,6 +104,11 @@ class PowerBIExportPipeline:
                 "summary": summary,
             }
         )
+
+        # Save validation report
+        if self.validation_manager.validation_results:
+            self.tracker.print_header("Saving Validation Report")
+            self.validation_manager.save_validation_report()
 
         # Clear state if all successful
         if not self.retry_manager.failed_months:
@@ -189,6 +206,28 @@ class PowerBIExportPipeline:
                 # Export data
                 self._export_data(df, year, month, day_start, day_end, progress)
 
+                try:
+
+                    # NEW: Add validation step
+                    self._validate_month_data(
+                        conn.connection, df, year, month, day_start, day_end, month_name
+                    )
+                    self.tracker.print_success(f"✅ Validation passed for {month_name}")
+
+                except Exception as validation_error:
+                    # Validation failed - treat as retry case
+                    validation_msg = f"Validation failed: {str(validation_error)}"
+                    self.tracker.print_error(f"❌ {validation_msg} for {month_name}")
+                    Logger.error(f"Validation failed for {month_name}: {str(validation_error)}")
+
+                    # Add to retry manager for validation failure
+                    self.retry_manager.add_failure(year, month, validation_msg)
+
+                    # Cleanup and return 0 to indicate failure
+                    del df
+                    gc.collect()
+                    return 0, 0.0
+
                 # Cleanup
                 del df
                 gc.collect()
@@ -225,6 +264,12 @@ class PowerBIExportPipeline:
         progress.update(export_task, description="[green]Exporting to Parquet")
         parquet_path = self.parquet_exporter.export(df, filename, progress)
         self.tracker.print_info(f"📦 Parquet exported: [bold]{parquet_path}[/bold]")
+        progress.advance(export_task)
+
+        # Export to Excel
+        progress.update(export_task, description="[green]Exporting to Excel")
+        excel_path = self.excel_exporter.export(df, filename, progress)
+        self.tracker.print_info(f"📊 Excel exported: [bold]{excel_path}[/bold]")
         progress.advance(export_task)
 
         progress.remove_task(export_task)
@@ -376,6 +421,11 @@ class PowerBIExportPipeline:
                 # Export data
                 self._export_data(df, year, month, day_start, day_end, progress)
 
+                # Add validation
+                self._validate_month_data(
+                    conn.connection, df, year, month, day_start, day_end, month_name
+                )
+
                 # Cleanup
                 del df
                 gc.collect()
@@ -439,6 +489,63 @@ class PowerBIExportPipeline:
                 )
                 for month_str in summary.get("max_attempts_reached", []):
                     self.tracker.print_error(f"     - {month_str}")
+
+    def _validate_month_data(
+            self,
+            connection,
+            df: pd.DataFrame,
+            year: int,
+            month: int,
+            day_start: int,
+            day_end: int,
+            month_name: str
+    ):
+        """Execute validation query and compare with DataFrame sum."""
+        try:
+            self.tracker.print_info(f"\n🔍 Running validation for {month_name}...")
+
+            # Load and format validation query
+            with open(self.validation_query_path, 'r', encoding='utf-8') as f:
+                validation_template = f.read()
+
+            validation_query = validation_template.format(
+                year=year, month=month,
+                day_start=day_start, day_end=day_end
+            )
+
+            # Execute validation query
+            validation_datatable = self.query_executor.execute(
+                connection, validation_query
+            )
+
+            # Convert to DataFrame
+            validation_df = self.data_processor.convert_to_dataframe(
+                validation_datatable
+            )
+
+            # Extract DAX sum value
+            dax_sum = float(validation_df['[SumAmountInEuro]'].iloc[0]) if len(validation_df) > 0 else 0.0
+
+            # Calculate DataFrame sum - try different column names
+            dataframe_sum = 0.0
+            if '[SumAmountInEuro]' in df.columns:
+                dataframe_sum = float(df['[SumAmountInEuro]'].sum())
+            elif 'AmountInEuro' in df.columns:
+                dataframe_sum = float(df['AmountInEuro'].sum())
+            else:
+                # Find any amount column
+                amount_cols = [col for col in df.columns if 'amount' in col.lower()]
+                if amount_cols:
+                    dataframe_sum = float(df[amount_cols[0]].sum())
+
+            # Validate
+            self.validation_manager.validate_month(
+                year, month, dax_sum, dataframe_sum, len(df), month_name
+            )
+
+        except Exception as e:
+            self.tracker.print_error(f"Validation failed for {month_name}: {str(e)}")
+            Logger.error(f"Validation error for {month_name}: {str(e)}")
 
 
 def main():

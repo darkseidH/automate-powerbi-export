@@ -1,6 +1,7 @@
 # PowerBI Data Export Tool
 
-A robust Python application for automated data extraction from PowerBI datasets with 12-month rolling window support, intelligent retry mechanisms, and multiple export formats.
+A robust Python application for automated data extraction from PowerBI datasets with 12-month rolling window support,
+intelligent retry mechanisms, and multiple export formats.
 
 ## 🚀 Features
 
@@ -56,8 +57,8 @@ A robust Python application for automated data extraction from PowerBI datasets 
    ```
 
 3. **Ensure your DAX query is in place**:
-   - Place your query template in `queries/billing_cases_query.dax`
-   - Use placeholders: `{year}`, `{month}`, `{day_start}`, `{day_end}`
+    - Place your query template in `queries/billing_cases_query.dax`
+    - Use placeholders: `{year}`, `{month}`, `{day_start}`, `{day_end}`
 
 ## 🚦 Usage
 
@@ -129,6 +130,7 @@ The tool automatically handles common PowerBI errors:
 ## 📊 Output Files
 
 Exported files follow this naming convention:
+
 ```
 billing_cases_YYYY_MM_DD_DD.csv
 billing_cases_YYYY_MM_DD_DD.parquet
@@ -141,24 +143,25 @@ Example: `billing_cases_2025_07_01_31.csv` for July 2025 data
 ### Common Issues
 
 1. **"Session ID cannot be found" Error**
-   - The tool will automatically retry with a new connection
-   - If persistent, check PowerBI workspace permissions
+    - The tool will automatically retry with a new connection
+    - If persistent, check PowerBI workspace permissions
 
 2. **Connection Timeout**
-   - Increase timeout values in `.env` file
-   - Check network connectivity to PowerBI
+    - Increase timeout values in `.env` file
+    - Check network connectivity to PowerBI
 
 3. **Missing ADOMD.NET Assembly**
-   - Ensure `lib/Microsoft.AnalysisServices.AdomdClient.dll` exists
-   - Install .NET Framework 4.5+ if not present
+    - Ensure `lib/Microsoft.AnalysisServices.AdomdClient.dll` exists
+    - Install .NET Framework 4.5+ if not present
 
 4. **Memory Errors**
-   - The tool automatically implements memory cleanup
-   - For large datasets, consider processing fewer months at once
+    - The tool automatically implements memory cleanup
+    - For large datasets, consider processing fewer months at once
 
 ### Debug Mode
 
 Enable detailed logging by modifying `logger/logger.py`:
+
 ```python
 Logger.setup(name="PowerBI_Export", level=logging.DEBUG)
 ```

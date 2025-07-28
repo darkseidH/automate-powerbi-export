@@ -1,4 +1,4 @@
-# main.py
+# main_v3.py
 """Main orchestrator for PowerBI 12-month data export pipeline."""
 
 import gc
@@ -11,6 +11,7 @@ from typing import List, Tuple, Optional
 from config import Config
 from core import PowerBIConnection, QueryExecutor, DataProcessor
 from exporters import CSVExporter, ParquetExporter
+from exporters.excel_exporter import ExcelExporter
 from logger.logger import Logger
 from utils import DateManager, ProgressTracker, RetryManager, StateManager
 
@@ -29,6 +30,7 @@ class PowerBIExportPipeline:
         # Initialize exporters
         self.csv_exporter = CSVExporter(self.config.csv_dir)
         self.parquet_exporter = ParquetExporter(self.config.parquet_dir)
+        self.excel_exporter = ExcelExporter(self.config.excel_dir)
 
         # Setup logging
         Logger.setup(name="PowerBI_Export", level=logging.INFO)
@@ -225,6 +227,12 @@ class PowerBIExportPipeline:
         progress.update(export_task, description="[green]Exporting to Parquet")
         parquet_path = self.parquet_exporter.export(df, filename, progress)
         self.tracker.print_info(f"📦 Parquet exported: [bold]{parquet_path}[/bold]")
+        progress.advance(export_task)
+
+        # Export to Excel
+        progress.update(export_task, description="[green]Exporting to Excel")
+        excel_path = self.excel_exporter.export(df, filename, progress)
+        self.tracker.print_info(f"📊 Excel exported: [bold]{excel_path}[/bold]")
         progress.advance(export_task)
 
         progress.remove_task(export_task)

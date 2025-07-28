@@ -2,13 +2,12 @@
 """Date range calculation utilities."""
 
 import calendar
-from datetime import datetime
 from typing import List, Tuple
 
 
 class DateManager:
     """Manages date calculations for monthly data extraction."""
-    
+
     @staticmethod
     def get_month_range(year: int, month: int) -> Tuple[int, int, int, int]:
         """
@@ -24,11 +23,11 @@ class DateManager:
         day_start = 1
         day_end = calendar.monthrange(year, month)[1]
         return year, month, day_start, day_end
-    
+
     @staticmethod
     def calculate_12_month_range(
-        end_year: int, 
-        end_month: int
+            end_year: int,
+            end_month: int
     ) -> List[Tuple[int, int]]:
         """
         Calculate 12 months backward from given end date.
@@ -41,23 +40,23 @@ class DateManager:
             List of (year, month) tuples in chronological order
         """
         months = []
-        
+
         # Generate 12 months going backwards
         for i in range(12):
             year = end_year
             month = end_month - i
-            
+
             # Handle year boundary
             while month <= 0:
                 month += 12
                 year -= 1
-                
+
             months.append((year, month))
-        
+
         # Return in chronological order
         months.reverse()
         return months
-    
+
     @staticmethod
     def get_month_name(year: int, month: int) -> str:
         """
@@ -71,13 +70,13 @@ class DateManager:
             Formatted string like "January 2025"
         """
         return f"{calendar.month_name[month]} {year}"
-    
+
     @staticmethod
     def format_filename_date(
-        year: int, 
-        month: int, 
-        day_start: int, 
-        day_end: int
+            year: int,
+            month: int,
+            day_start: int,
+            day_end: int
     ) -> str:
         """
         Format date components for filename.

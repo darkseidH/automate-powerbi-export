@@ -5,8 +5,8 @@ DEFINE
         FILTER (
             KEEPFILTERS ( VALUES ( 'Billing Cases'[ProcessingDate] ) ),
             AND (
-                'Billing Cases'[ProcessingDate] >= DATE ( {year_start}, {month}, {day} ),
-                'Billing Cases'[ProcessingDate] < DATE ( {year_end}, {month}, {day} )
+                'Billing Cases'[ProcessingDate] >= DATE ( {year_start}, {month_start}, {day_start} ),
+                'Billing Cases'[ProcessingDate] < DATE ( {year_end}, {month_end}, {day_end} )
             )
         )
     VAR __DS0Core =
